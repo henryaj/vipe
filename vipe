@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'benchmark'
-require 'fileutils'
+require "benchmark"
+require "fileutils"
 
-def print_info(command=nil)
+def print_info(command = nil)
   system "clear"
   puts "\x1b[35m#{"-" * 80}\x1b[0m"
   puts "\x1b[34mvipe running on directory: #{Dir.pwd}\x1b[0m"
@@ -35,29 +35,28 @@ end
 
 print_info
 
-postfix = Dir.pwd.gsub('/', '_')
-pipe_path = File.join('/tmp', ".vipe_pipe_#{postfix}")
+postfix = Dir.pwd.tr("/", "_")
+pipe_path = File.join("/tmp", ".vipe_pipe_#{postfix}")
 
-if File.exists?(pipe_path) && File.ftype(pipe_path) != "fifo"
+if File.exist?(pipe_path) && File.ftype(pipe_path) != "fifo"
   cached_command = File.readlines(pipe_path).last
-  FileUtils.rm_f pipe_path 
+  FileUtils.rm_f pipe_path
 end
 
-`mkfifo #{pipe_path}` unless File.exists?(pipe_path)
+`mkfifo #{pipe_path}` unless File.exist?(pipe_path)
 
-trap 'INT' do
+trap "INT" do
   puts
   puts "Cleaning up..."
-  FileUtils.rm_f pipe_path 
+  FileUtils.rm_f pipe_path
   exit
 end
 
 run_command cached_command if cached_command
 
-File.open pipe_path, 'w+' do |file|
+File.open pipe_path, "w+" do |file|
   loop do
-    command = file.gets.gsub(/\000/,"\n")
+    command = file.gets.gsub(/\000/, "\n")
     run_command(command)
   end
 end
-
